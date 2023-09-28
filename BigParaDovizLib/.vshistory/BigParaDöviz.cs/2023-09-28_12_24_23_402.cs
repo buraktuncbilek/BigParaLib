@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace BigParaDovizLib
 {
@@ -24,28 +26,35 @@ namespace BigParaDovizLib
         /// <returns>Kur kodu bazlı liste dönecektir.</returns>
         public static List<DovizTip> TümKurlarıVer()
         {
-            var web = new HtmlWeb();
-            var doc = web.Load(BaseUrl);
+            try
+            {
+                var web = new HtmlWeb();
+                var doc = web.Load(BaseUrl);
 
-            var aa = doc.DocumentNode.Descendants().FirstOrDefault(x => x.HasClass("dovizBar"));
+                var aa = doc.DocumentNode.Descendants().FirstOrDefault(x => x.HasClass("dovizBar"));
 
-            if (aa != null) doc.LoadHtml(aa.InnerHtml);
+                if (aa != null) doc.LoadHtml(aa.InnerHtml);
 
-            var dovizler = doc.DocumentNode.Descendants().Where(x => x.HasClass("dbItem"));
+                var dovizler = doc.DocumentNode.Descendants().Where(x => x.HasClass("dbItem"));
 
 
-            return (from doviz in dovizler
-                let names = doviz.Descendants().Where(x => x.HasClass("name")).ToList()
-                let values = doviz.Descendants().Where(x => x.HasClass("value")).ToList()
-                select new DovizTip()
-                {
-                    Döviz = names[0].InnerText.Trim(),
-                    DovizKoduString = names[0].InnerText.Contains("olar") ? "USD" : (names[0].InnerText.Contains("uro") ? "EUR" : "GBP"),
-                    DovizKodu = names[0].InnerText.Contains("olar") ? DövizKodu.USD : (names[0].InnerText.Contains("uro") ? DövizKodu.EUR : DövizKodu.GBP),
-                    Alış = Convert.ToDecimal(values[1].InnerText.Trim(), tr_culture),
-                    Satış = Convert.ToDecimal(values[2].InnerText.Trim(), tr_culture),
-                    DeğişimOranı = Convert.ToDecimal(values[0].InnerText.Replace("%", "").Trim(), tr_culture)
-                }).ToList();
+                return (from doviz in dovizler
+                    let names = doviz.Descendants().Where(x => x.HasClass("name")).ToList()
+                    let values = doviz.Descendants().Where(x => x.HasClass("value")).ToList()
+                    select new DovizTip()
+                    {
+                        Döviz = names[0].InnerText.Trim(),
+                        DovizKoduString = names[0].InnerText.Contains("olar") ? "USD" : (names[0].InnerText.Contains("uro") ? "EUR" : "GBP"),
+                        DovizKodu = names[0].InnerText.Contains("olar") ? DövizKodu.USD : (names[0].InnerText.Contains("uro") ? DövizKodu.EUR : DövizKodu.GBP),
+                        Alış = Convert.ToDecimal(values[1].InnerText.Trim(), tr_culture),
+                        Satış = Convert.ToDecimal(values[2].InnerText.Trim(), tr_culture),
+                        DeğişimOranı = Convert.ToDecimal(values[0].InnerText.Replace("%", "").Trim(), tr_culture)
+                    }).ToList();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         /// <summary>
